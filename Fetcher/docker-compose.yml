@@ -1,0 +1,18 @@
+version: "3"
+services:
+  fetcher:
+    image: 'fetcher:1.0.0-SNAPSHOT'
+    environment:
+      - source_kafka_url=kafka:9092
+      - source_kafka_source-topic=urls
+      - source_kafka_groupId=first2
+      - mongo_database_url=mongodb://localhost:27017
+      - mongo_database_name=mongodb_data
+      - source_kafka_InvalidUrl-topic=InvalidURL
+      - source_kafka_unprocessed-topic=unprocessedURL
+      - webpage_fetchMode=WebElement # URL, WebElement , default value is WebElement
+
+#    entrypoint:
+#      - tail
+#      - -f
+#      - /dev/null

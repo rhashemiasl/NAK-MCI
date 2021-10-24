@@ -1,0 +1,16 @@
+version: "3"
+services:
+  feeder:
+    image: 'feeder:1.0.0-SNAPSHOT'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - source_file_path=/source/urls
+      - source_file_timeStampFilePath=/source/TimeStampFile.cfg
+      - source_kafka_url=kafka:9092
+      - source_type=KAFKA
+    volumes:
+    - C:\Users\Admin\Desktop\MCI:/source
+#    entrypoint:
+#      - tail
+#      - -f
+#      - /dev/null

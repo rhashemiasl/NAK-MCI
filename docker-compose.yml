@@ -1,0 +1,60 @@
+version: "1"
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+      - '9093:9093'
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:9092
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper
+  mongodb:
+    image: docker.io/bitnami/mongodb:4.4
+    ports:
+      - "27017:27017"
+    volumes:
+      - 'mongodb_data:/bitnami/mongodb'
+  feeder:
+    image: 'feeder:1.0.0-SNAPSHOT'
+    environment:
+      - source_file_path=/source/urls # path of sources files, this path processed periodically
+      - source_file_pollingInterval=1 # polling interval of work directory to check new file
+      - source_file_timeStampFilePath=/source/TimeStampFile.cfg # keep last processed file time
+      - source_kafka_url=kafka:9092
+      - source_kafka_source-topic=my-topic
+      - source_kafka_groupId=first1
+      - source_type=Kafka # Kafka, File , default value is Kafka
+      - destination_kafka_url=kafka:9092
+      - destination_kafka_destination-topic=urls
+    volumes:
+    - C:\Users\Admin\Desktop\MCI:/source # C:\Users\Admin\Desktop\MCI is working directory on local mochine which contain urls dir and TimeStampFile.cfg
+  fetcher:
+    image: 'fetcher:1.0.0-SNAPSHOT'
+    environment:
+      - source_kafka_url=kafka:9092
+      - source_kafka_source-topic=urls
+      - source_kafka_groupId=first2
+      - mongo_database_url=mongodb://mongodb:27017
+      - mongo_database_name=mongodb_data
+      - source_kafka_InvalidUrl-topic=InvalidURL
+      - source_kafka_unprocessed-topic=unprocessedURL
+      - webpage_fetchMethod=WebElement # URL, WebElement , default value is WebElement
+
+volumes:
+  mongodb_data:
+    driver: local
